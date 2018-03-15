@@ -32,7 +32,7 @@ struct apartmentCardIndex {
     }
 
     void apartmentsOutput() {
-        apartment *current = new apartment;
+        apartment *current = head;
         while (current != NULL) {
             cout << current->rooms << " " << current->floor << " " << current->area << " " << current->address << endl;
             current = current->next;
@@ -58,8 +58,8 @@ struct apartmentCardIndex {
             if (current->rooms == desiredApatrment->rooms && current->floor == desiredApatrment->floor && (abs(current->area - desiredApatrment->area)/(current->area + desiredApatrment->area)/2*100) <= 10) {
                 cout << "Was found a suitable apartment at" << current->address << endl;
                 cout << "Processing the exchange..." << endl;
-                current->address == desiredApatrment->address;
-                current->area == desiredApatrment->area;
+                current->address = desiredApatrment->address;
+                current->area = desiredApatrment->area;
                 cout << "Successful exchange.";
                 apartmentsOutput();
                 break;
@@ -75,34 +75,37 @@ struct apartmentCardIndex {
     void open() {
         if (dbase.is_open()) {
             string line;
-            size_t pos = 0;
+            size_t pos;
             size_t new_pos;
             apartment *newApartment = new apartment;
             while ( getline (dbase, line) ) {
+                pos = 0;
                 newApartment->prev = tail;
                 new_pos = line.find(' ', pos);
-                newApartment->rooms = stoi(line.substr(pos, new_pos));
-                pos = new_pos;
+                newApartment->rooms = stoi(line.substr(pos, new_pos - pos));
+                pos = new_pos + 1;
                 new_pos = line.find(' ', pos);
-                newApartment->floor = stoi(line.substr(pos, new_pos));
-                pos = new_pos;
+                newApartment->floor = stoi(line.substr(pos, new_pos - pos));
+                pos = new_pos + 1;
                 new_pos = line.find(' ', pos);
-                newApartment->area = stod(line.substr(pos, new_pos));
+                newApartment->area = stoi(line.substr(pos, new_pos - pos));
                 newApartment->address = line.substr(new_pos);
                 if (head == NULL) {
                     head = newApartment;
                     tail = newApartment;
                     notUpdatedTail = newApartment;
                     head->prev = NULL;
+                    tail->next = NULL;
                 } else {
                     tail->next = newApartment;
-                    notUpdatedTail->next = newApartment;
                     newApartment->prev = tail;
                     tail = newApartment;
-                    notUpdatedTail = newApartment;
+                    tail->next = NULL;
                 }
                 newApartment = new apartment;
             }
+            notUpdatedTail = tail;
+            apartmentsOutput();
         } else cout << "Unable to open file";
     }
 
@@ -121,7 +124,7 @@ struct apartmentCardIndex {
 int main() {
     apartmentCardIndex mine;
     mine.open();
-    mine.exchangeRequest();
+    //mine.exchangeRequest();
     mine.save();
     return 0;
 }
